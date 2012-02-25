@@ -1,5 +1,4 @@
 #include <IRremote.h>
-#include <KeypadSimple.h>
 #include <avr/pgmspace.h>
 
 enum CodeIndex {
@@ -100,23 +99,21 @@ PROGMEM prog_uint64_t codes[] = {
   0xc800f741cLL   //Reload
 };
 
-const byte KEYS = 12; //number of keys
+int RECV_PIN = 11;
 
-char keys[KEYS] = {
-  '1','2','3','4',
-  '5','6','7','8',
-  '9','0','*','#'
-};
-byte keyPins[KEYS] = {31, 32, 33, 34, 35, 36, 37, 38, 39, 30, 40, 41}; //connect to the row pinouts of the keypad
+
 IRsend irsend;
-KeypadSimple keypad = KeypadSimple( makeKeymap(keys), keyPins, KEYS);
+IRrecv irrecv(RECV_PIN);
+
+decode_results results;
+
 #define SERIAL_DEBUG 0
 
 void setup(){
 #if SERIAL_DEBUG
   Serial.begin(9600);
 #endif
-  keypad.setDebounceTime(500);
+  irrecv.enableIRIn();
 }
 
 #if SERIAL_DEBUG
@@ -132,10 +129,10 @@ void printInt64Hex(unsigned long long number)
 #endif
 
 void loop(){
-  char key = keypad.getKey();
-
-  if (key != NO_KEY){
-    sendKey(key);
+  if (irrecv.decode(&results)) {
+    sendKey(results.value);
+    delay(500);
+    irrecv.resume(); // Receive the next value
   }
 }
 
@@ -148,7 +145,7 @@ unsigned long long getCode(int code)
   return out;
 }
 
-void sendKey(char key)
+void sendKey(unsigned long key)
 {
   static boolean toggle = false;
   static uint64_t last = 0LL;
@@ -156,42 +153,100 @@ void sendKey(char key)
   
   switch(key)
   {
-    case '4':
-    code = getCode(UpArrow);
-    break;
-    case '8':
-    code = getCode(DownArrow);
-    break;    
-    case '*':
-    code = getCode(LeftArrow);
-    break;
-    case '#':
-    code = getCode(RightArrow);
-    break;
-    case '1':
-    code = getCode(Back);
-    break;
-    case '3':
-    code = getCode(Enter);
-    break;
-    case '2':
-    code = getCode(Play);
-    break;
-    case '6':
-    code = getCode(Pause);
-    break;
-    case '5':
-    code = getCode(Rewind);
-    break;
-    case '7':
-    code = getCode(FastForward);
-    break;
-    case '0':
-    code = getCode(Stop);
-    break;
-    case '9':
+    case 3786778906UL:
+    //Display
+    code = getCode(Display);
+    break;  
+    case 1785214238UL:
+    //Power
     code = getCode(OnOff);
     break;
+    case 2464142367UL:
+    //Mute
+    code = getCode(Mute);
+    break;
+    case 3569241655UL:
+    //Prev Ch
+    code = getCode(Info);
+    break;
+    case 2420009735UL:
+    //Chan Up
+    code = getCode(UpArrow);
+    break;    
+    case 2003594874UL:
+    //Vol Down
+    code = getCode(LeftArrow);
+    break;
+    case 584651451UL:
+    //Vol Up
+    code = getCode(RightArrow);
+    break;
+    case 1907287990UL:
+    //Chan Down
+    code = getCode(DownArrow);
+    break;
+//    case 2123630850UL:
+//    Clear
+//    code = getCode(Back);
+//    break;
+    case 1635659550UL:
+    //Menu
+    code = getCode(XboxFancyButton);
+    break;
+//    case 1927151938UL:
+//    Reset
+//    code = getCode(DownArrow);
+//    break;
+    case 1808161147UL:
+    //One
+    code = getCode(Back);
+    break;
+    case 1935374718UL:
+    //Two
+    code = getCode(Play);
+    break;
+    case 516431295UL:
+    //Three
+    code = getCode(Enter);
+    break;
+    case 1158108118UL:
+    //Four
+    code = getCode(Rewind);
+    break;
+    case 3121565407UL:
+    //Five
+    code = getCode(Pause);
+    break;
+    case 1254415002UL:
+    //Six
+    code = getCode(FastForward);
+    break;
+    case 4130438875UL:
+    //Seven
+    code = getCode(X);
+    break;
+    case 4177530494UL:
+    //Eight
+    code = getCode(Y);
+    break;
+    case 3341359991UL:
+    //Nine
+    code = getCode(B);
+    break;
+    case 1086421151UL:
+    //Input
+    code = getCode(Prev);
+    break;
+    case 2307907450UL:
+    //Zero
+    code = getCode(A);
+    break;
+    case 216716127UL:
+    //Skip
+    code = getCode(Next);
+    break;
+    default:
+    return;
   }
   
 #if SERIAL_DEBUG
