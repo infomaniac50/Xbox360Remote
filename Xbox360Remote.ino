@@ -62,7 +62,7 @@ Hundred,
 Reload
 };
 
-PROGMEM prog_uint64_t codes[] = {
+uint64_t codes[] PROGMEM = {
   0xc800f7428LL,  //OpenClose
   0xc800ff464LL,  //XboxFancyButton
   0xc800f740cLL,  //OnOff
