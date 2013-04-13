@@ -1,3 +1,14 @@
+/*
+Xbox360Remote.ino - A sketch for the Arduino platform to control an Xbox 360 using infrared remote control protocols.
+Author: Derek Chafin
+Version: 1.0.1
+Modified: April 6, 2013
+Project Page: http://www.coding-squared.com/blog/2011/12/xbox-360-remote-control-with-an-arduino/
+License
+This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/.
+*/
+
 #include <IRremote.h>
 #include <KeypadSimple.h>
 #include <avr/pgmspace.h>
