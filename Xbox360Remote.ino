@@ -154,7 +154,7 @@ unsigned long long getCode(int code)
 {
   unsigned long long out = 0ULL;
   
-  memcpy_P(&out, codes + code, sizeof(unsigned long long));
+  memcpy_P(&out, (PGM_VOID_P)(&(codes[code])), sizeof(uint64_t));
   
   return out;
 }
