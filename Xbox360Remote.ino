@@ -177,7 +177,7 @@ size_t printInt64Hex(unsigned long long n, uint8_t base = DEC)
     *--str = c < 10 ? c + '0' : c + 'A' - 10;
   } while(n);
 
-  return Serial.write(str);
+  return Serial.write(str) + Serial.write('\r') + Serial.write('\n');
 }
 #endif
 
