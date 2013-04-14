@@ -131,14 +131,26 @@ void setup(){
 }
 
 #if SERIAL_DEBUG
-void printInt64Hex(unsigned long long number)
+size_t printInt64Hex(unsigned long long n, uint8_t base = DEC)
 {
-  unsigned long upper = 0UL;
-  unsigned long lower = 0UL;
-  upper = number >> 32;
-  lower = number & 0xFFFFFFFF;
-  Serial.print(upper, HEX);
-  Serial.println(lower, HEX);
+  //stole this code from the printNumber function in Print.h :P
+
+  char buf[8 * sizeof(long long) + 1]; // Assumes 8-bit chars plus zero byte.
+  char *str = &buf[sizeof(buf) - 1];
+
+  *str = '\0';
+
+  // prevent crash if called with base == 1
+  if (base < 2) base = 10;
+
+  do {
+    unsigned long m = n;
+    n /= base;
+    char c = m - base * n;
+    *--str = c < 10 ? c + '0' : c + 'A' - 10;
+  } while(n);
+
+  return Serial.write(str);
 }
 #endif
 
