@@ -9,8 +9,26 @@ This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unpo
 To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/.
 */
 
+/*********Configure your setup********** */
+#define SERIAL_TEST_PROGMEM 0 //Set to a non zero value to test the progmem code array.
+#define USE_KEYPAD_LIB 0 //Set to a non zero value if you are using a simple non-matrix keypad.
+#define SERIAL_DEBUG 0 //Set to a non zero value if you want Serial output.
+#define SERIAL_INPUT 1 //Set to a non zero value if you want Serial input.
+/*******************************************/
+
+#if SERIAL_TEST_PROGMEM
+//Failsafe if we are testing the progmem. Do not change.
+#undef SERIAL_DEBUG
+#define SERIAL_DEBUG 1 
+#undef SERIAL_INPUT
+#define SERIAL_INPUT 1
+#else
 #include <IRremote.h>
+
+#if USE_KEYPAD_LIB
 #include <KeypadSimple.h>
+#endif
+#endif
 #include <avr/pgmspace.h>
 
 enum CodeIndex {
@@ -111,6 +129,7 @@ uint64_t codes[] PROGMEM = {
   0xc800f741cLL   //Reload
 };
 
+#ifdef KEYPADSIMPLE_H
 const byte KEYS = 12; //number of keys
 
 char keys[KEYS] = {
@@ -119,15 +138,23 @@ char keys[KEYS] = {
   '9','0','*','#'
 };
 byte keyPins[KEYS] = {31, 32, 33, 34, 35, 36, 37, 38, 39, 30, 40, 41}; //connect to the row pinouts of the keypad
+#else
+  const char NO_KEY = '\0';
+#endif
+#ifdef IRremote_h
 IRsend irsend;
+#endif
+#ifdef KEYPADSIMPLE_H
 KeypadSimple keypad = KeypadSimple( makeKeymap(keys), keyPins, KEYS);
-#define SERIAL_DEBUG 0
+#endif
 
 void setup(){
-#if SERIAL_DEBUG
+#if SERIAL_DEBUG || SERIAL_INPUT
   Serial.begin(9600);
 #endif
+#ifdef KEYPADSIMPLE_H
   keypad.setDebounceTime(500);
+#endif
 }
 
 #if SERIAL_DEBUG
@@ -155,7 +182,21 @@ size_t printInt64Hex(unsigned long long n, uint8_t base = DEC)
 #endif
 
 void loop(){
-  char key = keypad.getKey();
+  char key;
+#ifdef KEYPADSIMPLE_H
+  key = keypad.getKey();
+#elif SERIAL_INPUT
+  if (Serial.available())
+  {
+    key = Serial.read();
+  }
+  else
+  {
+    key = NO_KEY;
+  }
+#else
+#error There is no input method defined.
+#endif
 
   if (key != NO_KEY){
     sendKey(key);
@@ -221,6 +262,7 @@ void sendKey(char key)
   printInt64Hex(code);
 #endif
   
+#ifdef IRremote_h
   if (last != code)
   {
     toggle = false;
@@ -234,5 +276,6 @@ void sendKey(char key)
   
   last = code;
   toggle = !toggle;
+#endif
 }
 
